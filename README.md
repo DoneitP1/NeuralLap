@@ -1,4 +1,3 @@
-```markdown
 # NeuralLap - iRacing Telemetry System
 
 **NeuralLap** is a real-time telemetry analysis tool for iRacing, providing live data visualization, post-race insights, and AI-driven performance evaluation.
