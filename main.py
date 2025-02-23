@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_socketio import SocketIO
 import mysql.connector
-import eventlet
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -36,3 +35,4 @@ def handle_send_data(data):
 
 if __name__ == "__main__":
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+
