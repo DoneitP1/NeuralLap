@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+html,
+body {
+  background-color: transparent;
+  /* Essential for overlay */
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  /* No scrollbars */
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+#root {
+  width: 100%;
+  height: 100vh;
+}
+
+/* Legacy CSS Removed for Overlay Transparency */

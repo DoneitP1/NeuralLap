@@ -1,0 +1,10 @@
+fastapi==0.109.2
+uvicorn==0.27.1
+python-socketio==5.11.1
+numpy==1.26.4
+# irsdk (Windows Only - Skipped on Mac)
+pydantic-settings
+
+websockets==12.0
+pydantic==2.6.1
+loguru==0.7.2

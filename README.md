@@ -25,28 +25,25 @@ cd NeuralLap
 
 ### 2️⃣ Install Dependencies
 ```bash
-pip install flask flask-socketio eventlet mysql-connector-python opencv-python scikit-learn
+# Create a virtual environment (optional but recommended)
+python3 -m venv venv
+source venv/bin/activate
+
+# Install requirements
+pip install flask flask-socketio eventlet requests
+# For frontend
+pip install PyQt5 websocket-client
 ```
 
-### 3️⃣ Set Up MySQL Database
-```sql
-CREATE DATABASE iracing_telemetry;
-USE iracing_telemetry;
-
-CREATE TABLE telemetry (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    speed INT,
-    throttle FLOAT,
-    brake FLOAT,
-    gear INT,
-    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-```
+### 3️⃣ Database Setup
+The project now uses **SQLite** automatically. No manual database setup is required!
+A file `telemetry.db` will be created when you run the backend.
 
 ### 4️⃣ Run the Backend Server
 ```bash
-python backend/app.py
+python main.py
 ```
+*Note: The server runs on port **5001** to avoid conflicts on macOS.*
 
 ### 5️⃣ Start Sending Telemetry Data (For Testing)
 ```bash
