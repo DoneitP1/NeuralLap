@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { DragWrapper } from './DragWrapper' // NEW
 import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Spotter } from './Spotter'
@@ -72,11 +73,28 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
         window.open(`/?view=${viewName}&scale=1.0&bg=transparent`, viewName, 'width=400,height=400,frame=false,transparent=true')
     }
 
+    // --- LAYOUT EDITOR STATE ---
+    const [editMode, setEditMode] = useState(false)
+    const [layout, setLayout] = useState(() => {
+        const saved = localStorage.getItem('hud_layout')
+        return saved ? JSON.parse(saved) : {}
+    })
+
+    const handleLayoutChange = (id, pos) => {
+        const newLayout = { ...layout, [id]: pos }
+        setLayout(newLayout)
+        localStorage.setItem('hud_layout', JSON.stringify(newLayout))
+    }
+
     return (
         <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-end pb-12 select-none overflow-hidden relative fade-in">
 
             {/* Widget Pop-out Controls */}
+            {/* Widget Pop-out Controls & Edit Mode */}
             <div className="absolute top-0 right-0 p-2 flex gap-2 opacity-0 hover:opacity-100 transition-opacity z-50">
+                <button onClick={() => setEditMode(!editMode)} className={`p-1 text-xs text-white rounded font-bold ${editMode ? 'bg-red-600' : 'bg-green-600'}`}>
+                    {editMode ? 'Lock Layout' : 'Edit Layout'}
+                </button>
                 <button onClick={() => openWidget('radar')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Radar</button>
                 <button onClick={() => openWidget('inputs')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Inputs</button>
                 <button onClick={() => openWidget('relative')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Relative</button>
@@ -117,35 +135,52 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
             <Spotter left={data.spotter_left} right={data.spotter_right} />
 
             {/* 3. Main HUD Cluster */}
-            {/* 3.1 RPM Bar */}
-            <RPMBar rpm={data.rpm} maxRpm={8000} />
+            <div className="w-full flex flex-col items-center">
+                {/* 3.1 RPM Bar */}
+                <DragWrapper id="rpm_bar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="w-[800px]">
+                    <RPMBar rpm={data.rpm} maxRpm={8000} />
+                </DragWrapper>
 
-            {/* 3.4 Input Traces */}
-            <div className="w-[600px] flex justify-center mt-2">
-                <InputTelemetry telemetry={data} />
+                {/* 3.4 Input Traces */}
+                <DragWrapper id="inputs" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="mt-2">
+                    <div className="w-[600px] flex justify-center">
+                        <InputTelemetry telemetry={data} />
+                    </div>
+                </DragWrapper>
             </div>
 
-            {/* 3.5 Radar Overlay */}
-            <RadarOverlay cars={data.radar_cars} />
-
+            {/* 3.5 Radar Overlay (Absolute-ish but draggable) */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+                <div className="pointer-events-auto">
+                    <DragWrapper id="radar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                        <RadarOverlay cars={data.radar_cars} />
+                    </DragWrapper>
+                </div>
+            </div>
 
             {/* 4. Lap Time Stats (Floating Right of HUD) */}
-            <div className="absolute bottom-32 right-20 flex flex-col gap-2">
-                <StatBox
-                    label="LAP TIME"
-                    value="1:34.2"
-                    color="text-yellow-400"
-                    subLabel="PRED"
-                    subValue={formatTime(data.predicted_lap)}
-                />
-                {
-                    data.potential_lap > 0 && (
-                        <div className="bg-purple-900/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-lg flex flex-col items-center shadow-xl mt-2">
-                            <span className="text-[8px] text-purple-300 font-bold tracking-widest uppercase">IDEAL</span>
-                            <span className="text-xl font-black text-white tabular-nums tracking-tighter">{formatTime(data.potential_lap)}</span>
+            <div className="absolute bottom-32 right-20 flex flex-col gap-2 pointer-events-none">
+                <div className="pointer-events-auto">
+                    <DragWrapper id="lap_stats" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                        <div className="flex flex-col gap-2">
+                            <StatBox
+                                label="LAP TIME"
+                                value="1:34.2"
+                                color="text-yellow-400"
+                                subLabel="PRED"
+                                subValue={formatTime(data.predicted_lap)}
+                            />
+                            {
+                                data.potential_lap > 0 && (
+                                    <div className="bg-purple-900/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-lg flex flex-col items-center shadow-xl mt-2">
+                                        <span className="text-[8px] text-purple-300 font-bold tracking-widest uppercase">IDEAL</span>
+                                        <span className="text-xl font-black text-white tabular-nums tracking-tighter">{formatTime(data.potential_lap)}</span>
+                                    </div>
+                                )
+                            }
                         </div>
-                    )
-                }
+                    </DragWrapper>
+                </div>
             </div>
 
         </div>
