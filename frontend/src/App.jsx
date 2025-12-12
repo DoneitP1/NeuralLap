@@ -8,9 +8,14 @@ import Welcome from './components/Welcome' // NEW
 import VRMenu from './components/VRMenu' // NEW
 import AnalysisDashboard from './components/AnalysisDashboard' // NEW
 import StrategyPanel from './components/StrategyPanel' // NEW
+import Marketplace from './components/Community/Marketplace' // NEW
+import Leagues from './components/Community/Leagues' // NEW
 
 // Connect to Backend
-const socket = io('http://localhost:8000')
+// Connect to Backend (Dynamic Host)
+const query = new URLSearchParams(window.location.search)
+const host = query.get('host') || 'localhost'
+const socket = io(`http://${host}:8000`)
 
 function App() {
   const [data, setData] = useState({
@@ -90,7 +95,7 @@ function App() {
   }, [])
 
   // --- ROUTING LOGIC ---
-  const query = new URLSearchParams(window.location.search)
+  // Query params already parsed above for host
   const viewMode = query.get('view') // 'radar', 'inputs', 'relative', 'fuel'
   const appMode = query.get('mode') // 'desktop', 'vr'
 
@@ -142,6 +147,26 @@ function App() {
 
   if (appMode === 'analysis') {
     return <AnalysisDashboard />
+  }
+
+  if (appMode === 'marketplace') {
+    return (
+      <div className="w-screen h-screen bg-neutral-900 flex justify-center">
+        <div className="w-full max-w-6xl">
+          <Marketplace />
+        </div>
+      </div>
+    )
+  }
+
+  if (appMode === 'leagues') {
+    return (
+      <div className="w-screen h-screen bg-neutral-900 flex justify-center">
+        <div className="w-full max-w-6xl">
+          <Leagues />
+        </div>
+      </div>
+    )
   }
 
   // 3. LANDING PAGE (Default)

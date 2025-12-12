@@ -357,6 +357,44 @@ class TelemetryEngine:
             self.loop
         )
 
+        # NEURAL COMMUNITY: Submit to League (Mocking League ID 1 for now)
+        try:
+            # Check if this is a "League Mode" session? For now, we auto-submit to "Global Daily League"
+            from app.core.database import engine as db_engine
+            from sqlmodel import Session, select
+            from app.engine.models.community import League, LeagueEntry
+            
+            with Session(db_engine) as session:
+                # Get or Create automated daily league
+                league = session.exec(select(League).where(League.name == "Global Daily")).first()
+                if not league:
+                    league = League(name="Global Daily", criteria="cleanest")
+                    session.add(league)
+                    session.commit()
+                    session.refresh(league)
+                
+                # Calculate Scores from Report
+                # Cleanliness: 100 - (mistakes count * 5)
+                mistake_count = len(data.get('mistakes', []))
+                cleanliness_score = max(0, 100 - (mistake_count * 5))
+                
+                # Consistency: Mocking it for now (would need lap history)
+                # Using Pilot Score as proxy for consistency in this MVP
+                consistency_score = data.get('pilot_score', 0)
+                
+                entry = LeagueEntry(
+                    league_id=league.id,
+                    driver_name="You", # TODO: Get from User Profile or SteamID
+                    lap_time=94.215, # Mock: Parse "1:34.215" -> 94.215
+                    cleanliness_score=cleanliness_score,
+                    consistency_score=consistency_score
+                )
+                session.add(entry)
+                session.commit()
+                # logger.info(f"Submitted Lap to League: {league.name}")
+        except Exception as e:
+            logger.error(f"Failed to submit to league: {e}")
+
     def _process_iracing(self):
         # Check connection
         if not self.connected:

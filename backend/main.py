@@ -35,6 +35,8 @@ import asyncio
 
 @app.on_event("startup")
 async def startup_event():
+    from app.core.database import create_db_and_tables
+    create_db_and_tables()
     global telemetry_engine
     logger.info("Neural Lap Backend Starting...")
     loop = asyncio.get_running_loop()
