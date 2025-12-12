@@ -6,7 +6,7 @@ function cn(...inputs) {
     return twMerge(clsx(inputs));
 }
 
-export function ARVisuals({ brakeBox, apexCorridor }) {
+export function ARVisuals({ brakeBox, apexCorridor, liftCoast }) {
 
     return (
         <div
@@ -65,6 +65,25 @@ export function ARVisuals({ brakeBox, apexCorridor }) {
                     {/* Floating Text */}
                     <div className="absolute top-1/3 text-green-400 font-bold text-2xl animate-bounce shadow-black drop-shadow-lg">
                         HIT APEX &gt;&gt;&gt;
+                    </div>
+                </div>
+            )}
+
+            {/* 3. Lift & Coast Wall (Blue) */}
+            {liftCoast && liftCoast.active && (
+                <div
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center transition-transform duration-75 ease-linear"
+                    style={{
+                        transform: `scale(${2.5 - (liftCoast.distance / 1000)}) translateZ(0)`
+                    }}
+                >
+                    <div className="w-[400px] h-[250px] border-[6px] border-blue-600/80 rounded-xl shadow-[0_0_50px_rgba(37,99,235,0.6)] flex items-center justify-center bg-blue-900/10 backdrop-blur-[2px]">
+                        <div className="text-blue-500 font-black text-6xl tracking-tighter animate-pulse">
+                            LIFT
+                        </div>
+                        <div className="absolute -bottom-12 text-blue-200 font-bold text-xl bg-black/50 px-3 py-1 rounded">
+                            FUEL SAVING
+                        </div>
                     </div>
                 </div>
             )}

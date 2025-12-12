@@ -25,7 +25,8 @@ sio_app = socketio.ASGIApp(sio, app)
 # 4. Include Routers
 app.include_router(api_router, prefix="/api")
 
-from app.engine.telemetry import TelemetryEngine
+from app.engine.telemetry import TelemetryEngine # (Correction: Should be relative or absolute)
+from app.engine.strategy import strategy_engine # NEW
 
 # Global Engine Instance
 telemetry_engine = None

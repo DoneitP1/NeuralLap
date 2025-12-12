@@ -27,6 +27,13 @@ export function DebugPanel({ socket }) {
                 </button>
 
                 <button
+                    onClick={() => send('trigger_coach', "Brake later into turn one!")}
+                    className="bg-purple-900/40 hover:bg-purple-500 hover:text-black border border-purple-500/50 text-purple-400 px-3 py-2 rounded text-xs font-bold transition-all uppercase tracking-wider text-left"
+                >
+                    🗣️ Test Audio
+                </button>
+
+                <button
                     onClick={() => send('trigger_brake')}
                     className="bg-red-900/40 hover:bg-red-500 hover:text-black border border-red-500/50 text-red-400 px-3 py-2 rounded text-xs font-bold transition-all uppercase tracking-wider text-left"
                 >
