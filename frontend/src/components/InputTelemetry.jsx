@@ -41,7 +41,10 @@ const InputTelemetry = ({ telemetry }) => {
 
                     {/* Brake */}
                     <div className="flex flex-col items-center gap-1 group">
-                        <div className="w-4 h-full bg-neutral-800 rounded-full relative overflow-hidden border border-white/5">
+                        <div
+                            className={`w-4 h-full bg-neutral-800 rounded-full relative overflow-hidden border border-white/5 ${telemetry.hardware?.haptic?.type === 'pedal_vibration' ? 'animate-vibrate ring-2 ring-red-500 ring-opacity-50' : ''
+                                }`}
+                        >
                             <div
                                 className="absolute bottom-0 w-full bg-red-500 transition-all duration-75 rounded-b-full group-hover:bg-red-400 shadow-[0_0_10px_rgba(239,68,68,0.5)]"
                                 style={{ height: `${brakePct}%`, willChange: 'height' }}

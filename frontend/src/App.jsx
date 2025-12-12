@@ -10,6 +10,8 @@ import AnalysisDashboard from './components/AnalysisDashboard' // NEW
 import StrategyPanel from './components/StrategyPanel' // NEW
 import Marketplace from './components/Community/Marketplace' // NEW
 import Leagues from './components/Community/Leagues' // NEW
+import MobileCompanion from './components/Mobile/MobileCompanion' // NEW
+import AmbientLighting from './components/Hardware/AmbientLighting' // NEW
 
 // Connect to Backend
 // Connect to Backend (Dynamic Host)
@@ -37,6 +39,7 @@ function App() {
     setup_suggestion: null,
     ar_lift_coast: null, // Added for ARVisuals
     strategy: null, // Added for StrategyPanel
+    hardware: null, // Added for Hardware Integration
     timestamp: 0
   })
 
@@ -138,7 +141,12 @@ function App() {
 
   // 2. APP MODES
   if (appMode === 'desktop') {
-    return <Dashboard data={data} socket={socket} neuralReport={neuralReport} setNeuralReport={setNeuralReport} />
+    return (
+      <>
+        <AmbientLighting lightEvent={data.hardware?.light} />
+        <Dashboard data={data} socket={socket} neuralReport={neuralReport} setNeuralReport={setNeuralReport} />
+      </>
+    )
   }
 
   if (appMode === 'vr') {
@@ -167,6 +175,11 @@ function App() {
         </div>
       </div>
     )
+  }
+
+  if (appMode === 'mobile') {
+    // Pass data to mobile
+    return <MobileCompanion data={data} />
   }
 
   // 3. LANDING PAGE (Default)

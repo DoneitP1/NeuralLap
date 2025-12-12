@@ -6,6 +6,7 @@ import random
 import math
 from loguru import logger
 from app.engine.strategy import strategy_engine # NEW
+from app.engine.hardware import hardware_engine # NEW
 
 # Try import irsdk, else use Mock
 try:
@@ -307,6 +308,7 @@ class TelemetryEngine:
                 "tire_prediction": tire_pred,
                 "pit_alert": pit_alert
             },
+            "flag_state": "yellow" if 20 < (t % 60) < 25 else "green", # Mock Flag State
             "timestamp": t
         }
         
@@ -348,6 +350,10 @@ class TelemetryEngine:
             # Emit specifically as a report event
             self._emit_report(report_data)
 
+        # Hardware Processing
+        hw_events = hardware_engine.process(data)
+        data['hardware'] = hw_events
+        
         self.latest_data = data
         self._emit(data)
 

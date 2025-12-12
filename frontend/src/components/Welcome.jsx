@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
+import ConnectModal from './ConnectModal'; // NEW
 
 const Welcome = () => {
+    const [showConnect, setShowConnect] = useState(false);
+
     const handleSelect = (mode) => {
         window.location.search = `?mode=${mode}`;
     };
@@ -10,6 +13,17 @@ const Welcome = () => {
             {/* Background Effects */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-900/20 to-black pointer-events-none"></div>
             <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50"></div>
+
+            {/* Mobile Connect Button - Absolute Top Right */}
+            <button
+                onClick={() => setShowConnect(true)}
+                className="absolute top-6 right-6 flex items-center gap-2 px-4 py-2 bg-neutral-900 border border-neutral-700 rounded-full text-neutral-400 hover:text-white hover:border-cyan-500 transition-colors z-50 shadow-lg"
+            >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                <span className="text-sm font-bold">Connect Mobile</span>
+            </button>
+
+            {showConnect && <ConnectModal onClose={() => setShowConnect(false)} />}
 
             <h1 className="text-6xl font-black text-white italic tracking-tighter z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.2)]">
                 NEURAL<span className="text-cyan-500">LAP</span>
