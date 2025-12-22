@@ -7,6 +7,7 @@ import math
 from loguru import logger
 from app.engine.strategy import strategy_engine # NEW
 from app.engine.hardware import hardware_engine # NEW
+from app.engine.iot import iot_engine # NEW
 
 # Try import irsdk, else use Mock
 try:
@@ -301,6 +302,7 @@ class TelemetryEngine:
             "potential_lap": potential_lap,
             "coach_msg": coach_msg,
             "relative_drivers": relative_drivers,
+            "bio": iot_engine.get_data(), # NEW V3.1
             "fuel_strategy": fuel_strategy, 
             "radar_cars": radar_cars,
             "setup_suggestion": setup_suggestion, 
@@ -347,12 +349,20 @@ class TelemetryEngine:
                     "speed_ref": trace_speed_ref
                 }
             }
+        if report_data:
+            # Add bio data to report for analysis
+            report_data["bio"] = iot_engine.get_data()
+            session.add_lap(report_data)
+            
             # Emit specifically as a report event
             self._emit_report(report_data)
 
-        # Hardware Processing
+        # Hardware & IoT Processing
         hw_events = hardware_engine.process(data)
         data['hardware'] = hw_events
+        
+        # Update Mock IoT (if needed)
+        iot_engine.update_mock_data(speed, brake, rpm)
         
         self.latest_data = data
         self._emit(data)

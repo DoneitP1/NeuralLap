@@ -11,6 +11,7 @@ import InputTelemetry from './InputTelemetry'
 import RadarOverlay from './RadarOverlay'
 import SetupManager from './SetupManager'
 import NeuralReport from './NeuralReport'
+import { BioWidget } from './BioWidget' // NEW V3.1
 
 // --- HELPER COMPONENTS (Moved from App.jsx) ---
 function cn(...inputs) {
@@ -154,6 +155,15 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
                 <div className="pointer-events-auto">
                     <DragWrapper id="radar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
                         <RadarOverlay cars={data.radar_cars} />
+                    </DragWrapper>
+                </div>
+            </div>
+
+            {/* 3.6 Bio-Metric Widget */}
+            <div className="absolute top-32 right-64 flex flex-col gap-2 pointer-events-none">
+                <div className="pointer-events-auto">
+                    <DragWrapper id="bio" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                        <BioWidget bio={data.bio} />
                     </DragWrapper>
                 </div>
             </div>
