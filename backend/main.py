@@ -27,9 +27,11 @@ app.include_router(api_router, prefix="/api")
 
 from app.engine.telemetry import TelemetryEngine # (Correction: Should be relative or absolute)
 from app.engine.strategy import strategy_engine # NEW
+from app.engine.voice_engine import VoiceEngine # NEW
 
 # Global Engine Instance
 telemetry_engine = None
+voice_engine = None
 
 import asyncio
 
@@ -43,11 +45,18 @@ async def startup_event():
     telemetry_engine = TelemetryEngine(sio, loop)
     telemetry_engine.start()
 
+    # Start Voice Engine
+    global voice_engine
+    voice_engine = VoiceEngine(telemetry_engine)
+    voice_engine.start()
+
 @app.on_event("shutdown")
 async def shutdown_event():
     global telemetry_engine
     if telemetry_engine:
         telemetry_engine.stop()
+    if voice_engine:
+        voice_engine.stop()
 
 @app.get("/")
 async def root():
