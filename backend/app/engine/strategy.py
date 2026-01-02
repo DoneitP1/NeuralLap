@@ -5,6 +5,52 @@ class StrategyEngine:
         self.track_temp_history = []
         self.base_tire_psi = 23.0  # Starting PSI
         self.fuel_per_lap_avg = 1.85 # Liters
+        self.tire_life_expectancy = {"SOFT": 15, "MEDIUM": 25, "HARD": 40}
+
+    def calculate_tire_degradation(self, laps_driven, tire_compound="SOFT", track_temp=30.0):
+        """
+        Calculates tire degradation percentage based on compound and conditions.
+        """
+        base_life = self.tire_life_expectancy.get(tire_compound, 20)
+        
+        # Temp factor: Higher temp = faster degradation
+        temp_factor = 1.0 + (max(0, track_temp - 25) * 0.02)
+        
+        # Non-linear degradation curve (exponential towards end of life)
+        wear_factor = (laps_driven / base_life) ** 1.5
+        
+        degradation = min(100.0, wear_factor * temp_factor * 100)
+        return round(degradation, 1)
+
+    def calculate_fuel_strategy(self, total_laps, laps_completed, fuel_remaining):
+        """
+        Calculates fuel requirements and saving suggestions.
+        """
+        laps_remaining = total_laps - laps_completed
+        fuel_needed = laps_remaining * self.fuel_per_lap_avg
+        
+        diff = fuel_remaining - fuel_needed
+        
+        status = "OK"
+        action = "PUSH"
+        
+        if diff < -2.0:
+            status = "CRITICAL"
+            action = "HEAVY SAVE"
+        elif diff < 0:
+            status = "WARNING"
+            action = "LIFT & COAST"
+        elif diff > 5.0:
+            status = "ABUNDANT"
+            action = "MAX POWER"
+            
+        return {
+            "fuel_needed": round(fuel_needed, 2),
+            "fuel_remaining": round(fuel_remaining, 2),
+            "delta": round(diff, 2),
+            "status": status,
+            "recommended_action": action
+        }
 
     def predict_tire_pressures(self, current_temp):
         """
@@ -83,6 +129,31 @@ class StrategyEngine:
             "active": active,
             "distance": distance,
             "type": "LIFT"
+        }
+
+    def get_strategy_recommendation(self, session_data):
+        """
+        Aggregates all models to provide a holistic race strategy.
+        """
+        # Extract data (mocking the extraction for now)
+        laps_done = session_data.get("laps_completed", 0)
+        total_laps = session_data.get("total_laps", 50)
+        fuel_level = session_data.get("fuel_level", 10.0)
+        tire_compound = session_data.get("tire_compound", "SOFT")
+        track_temp = session_data.get("track_temp", 30.0)
+        
+        deg = self.calculate_tire_degradation(laps_done, tire_compound, track_temp)
+        fuel_strat = self.calculate_fuel_strategy(total_laps, laps_done, fuel_level)
+        
+        pit_recommendation = "STAY OUT"
+        if deg > 70 or fuel_strat["status"] == "CRITICAL":
+            pit_recommendation = "BOX BOX"
+        
+        return {
+            "tire_degradation": deg,
+            "fuel_strategy": fuel_strat,
+            "pit_recommendation": pit_recommendation,
+            "tire_compound": tire_compound
         }
 
 strategy_engine = StrategyEngine()

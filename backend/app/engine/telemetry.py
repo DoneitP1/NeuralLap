@@ -51,6 +51,11 @@ class TelemetryEngine:
             "ar_apex": None,
             "coach_audio": None
         }
+        
+        # Session Management
+        self.active_user_id = None
+        self.current_session_id = None
+
 
     def start(self):
         if self.running:
@@ -95,6 +100,11 @@ class TelemetryEngine:
             elif cmd == 'trigger_spotter_right':
                 self.manual_state['spotter_right'] = True
                 threading.Timer(3.0, lambda: self.manual_state.update({'spotter_right': False})).start()
+                
+        @self.sio.on('set_active_user')
+        async def on_set_active_user(sid, user_id):
+             logger.info(f"Setting active user to: {user_id}")
+             self.active_user_id = user_id
 
     def stop(self):
         self.running = False
@@ -173,8 +183,25 @@ class TelemetryEngine:
             from app.core.database import engine as db_engine
             from sqlmodel import Session, select
             from app.engine.models.community import League, LeagueEntry
+            from app.engine.models.telemetry_session import TelemetrySession
 
             with Session(db_engine) as session:
+                # 1. Update/Create Telemetry Session
+                if self.active_user_id:
+                     # Check if we have an open session or create new
+                     # For simplicity, let's treat each 'report' as a session summary or part of it
+                     # Ideally, we open session on game start, close on end.
+                     # Here just logging the lap.
+                     t_session = TelemetrySession(
+                        user_id=self.active_user_id,
+                        track=data.get('track', 'Unknown'),
+                        car=data.get('car', 'Unknown'),
+                        best_lap=94.215, # Mock
+                        lap_count=1
+                     )
+                     session.add(t_session)
+                     session.commit()
+
                 league = session.exec(select(League).where(League.name == "Global Daily")).first()
                 if not league:
                     league = League(name="Global Daily", criteria="cleanest")

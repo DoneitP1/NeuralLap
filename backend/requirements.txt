@@ -9,7 +9,13 @@ websockets==12.0
 pydantic==2.6.1
 loguru==0.7.2
 bleak
-vosk==0.3.45
+vosk
 pyttsx3==2.90
-pyaudio==0.2.14
 pynput==1.7.6
+sqlmodel
+passlib
+bcrypt==4.0.1
+
+python-jose[cryptography]
+python-multipart
+httpx

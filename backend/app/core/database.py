@@ -1,6 +1,11 @@
 from sqlmodel import SQLModel, create_engine, Session
 from app.core.config import settings
+from app.core.config import settings
 import os
+from app.engine.models.user import User # Register model
+from app.engine.models.telemetry_session import TelemetrySession
+
+
 
 # Ensure data directory exists
 os.makedirs("data", exist_ok=True)
