@@ -1,42 +1,62 @@
-import React, { useRef } from 'react'
-import Draggable from 'react-draggable'
+import { Rnd } from 'react-rnd';
 
-export const DragWrapper = ({ children, id, editMode, layout, onLayoutChange, className = "" }) => {
-    const nodeRef = useRef(null)
-    const position = layout[id] || { x: 0, y: 0 }
+export const DragWrapper = ({ children, id, editMode, layout, onLayoutChange, className = "", defaultSize }) => {
+    // Layout now stores {x, y, width, height}
+    const itemLayout = layout[id] || { x: 0, y: 0, width: 'auto', height: 'auto' };
 
-    const handleStop = (e, data) => {
-        onLayoutChange(id, { x: data.x, y: data.y })
+    // Check if we have valid numeric positions, otherwise default (e.g. for first render if not in layout yet)
+    // Actually, Rnd manages its internal state better if we use 'default' vs 'position/size' props.
+    // But to persist, we need controlled component.
+
+    const handleStop = (e, d) => {
+        onLayoutChange(id, {
+            ...itemLayout,
+            x: d.x,
+            y: d.y
+        });
+    }
+
+    const handleResizeStop = (e, direction, ref, delta, position) => {
+        onLayoutChange(id, {
+            width: ref.style.width,
+            height: ref.style.height,
+            ...position
+        });
     }
 
     if (!editMode) {
-        // Render in place (or at saved absolute offset if we used absolute positioning)
-        // For simplicity, we can continue to use Draggable but disabled, to maintain position
         return (
-            <Draggable
-                nodeRef={nodeRef}
-                position={position}
-                disabled={true}
+            <div
+                className={className}
+                style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    transform: `translate(${itemLayout.x}px, ${itemLayout.y}px)`,
+                    width: itemLayout.width,
+                    height: itemLayout.height,
+                    zIndex: 20, // Ensure visibility
+                }}
             >
-                <div ref={nodeRef} className={className}>
-                    {children}
-                </div>
-            </Draggable>
+                {children}
+            </div>
         )
     }
 
     return (
-        <Draggable
-            nodeRef={nodeRef}
-            position={position}
-            onStop={handleStop}
+        <Rnd
+            size={{ width: itemLayout.width || 'auto', height: itemLayout.height || 'auto' }}
+            position={{ x: itemLayout.x, y: itemLayout.y }}
+            onDragStop={handleStop}
+            onResizeStop={handleResizeStop}
+            className={`${className} border-2 border-dashed border-cyan-500 bg-black/20 z-[100] group`}
+            bounds="window"
+            enableResizing={true}
         >
-            <div ref={nodeRef} className={`${className} cursor-move border-2 border-dashed border-cyan-500 bg-black/20 relative group z-[100]`}>
-                <div className="absolute -top-6 left-0 bg-cyan-500 text-black text-xs font-bold px-2 py-0.5 rounded-t opacity-0 group-hover:opacity-100 transition-opacity">
-                    {id}
-                </div>
-                {children}
+            <div className="absolute -top-6 left-0 bg-cyan-500 text-black text-xs font-bold px-2 py-0.5 rounded-t opacity-50 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                {id} (Drag & Resize)
             </div>
-        </Draggable>
+            {children}
+        </Rnd>
     )
 }

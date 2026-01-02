@@ -4,7 +4,7 @@ import { clsx } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { Spotter } from './Spotter'
 import { ARVisuals } from './ARVisuals'
-import { DebugPanel } from './DebugPanel'
+
 import { RelativeTable } from './RelativeTable'
 import { FuelStrategy } from './FuelStrategy'
 import InputTelemetry from './InputTelemetry'
@@ -82,7 +82,26 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
     const [editMode, setEditMode] = useState(false)
     const [layout, setLayout] = useState(() => {
         const saved = localStorage.getItem('hud_layout')
-        return saved ? JSON.parse(saved) : {}
+        // DEFAULT LAYOUT INITIALIZATION
+        const w = window.innerWidth
+        const h = window.innerHeight
+        const defaults = {
+            mobile_sync: { x: w - 220, y: 60, width: 'auto', height: 'auto' },
+            strategy_panel: { x: 50, y: 150, width: 'auto', height: 'auto' },
+            fuel_strategy: { x: w - 220, y: h - 300, width: 'auto', height: 'auto' },
+            setup_manager: { x: w - 350, y: 100, width: 'auto', height: 'auto' },
+            radar: { x: w / 2 - 150, y: h / 2 - 150, width: 'auto', height: 'auto' },
+            bio: { x: w - 300, y: 150, width: 'auto', height: 'auto' },
+            lap_stats: { x: w - 150, y: h - 250, width: 'auto', height: 'auto' },
+            rpm_bar: { x: w / 2 - 400, y: h - 140, width: 800, height: 'auto' },
+            inputs: { x: w / 2 - 300, y: h - 100, width: 600, height: 'auto' }
+        }
+
+        if (saved) {
+            const parsed = JSON.parse(saved)
+            return { ...defaults, ...parsed } // Merge saved over defaults
+        }
+        return defaults
     })
 
     const handleLayoutChange = (id, pos) => {
@@ -91,14 +110,22 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
         localStorage.setItem('hud_layout', JSON.stringify(newLayout))
     }
 
+    const resetLayout = () => {
+        localStorage.removeItem('hud_layout')
+        window.location.reload()
+    }
+
     return (
         <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-end pb-12 select-none overflow-hidden relative">
 
 
             {/* Widget Pop-out Controls */}
             {/* Widget Pop-out Controls & Edit Mode */}
-            <div className="absolute top-0 right-0 p-2 flex gap-2 opacity-0 hover:opacity-100 transition-opacity z-50">
-                <button onClick={() => setEditMode(!editMode)} className={`p-1 text-xs text-white rounded font-bold ${editMode ? 'bg-red-600' : 'bg-green-600'}`}>
+            <div className="absolute top-0 right-0 p-2 flex gap-2 z-50 bg-black/50 backdrop-blur rounded-bl-xl border-b border-l border-white/10">
+                <button onClick={resetLayout} className="p-1 text-xs bg-red-800 text-white rounded font-bold hover:bg-red-700">
+                    Reset Layout
+                </button>
+                <button onClick={() => setEditMode(!editMode)} className={`p-1 text-xs text-white rounded font-bold ${editMode ? 'bg-orange-600' : 'bg-green-600'}`}>
                     {editMode ? 'Lock Layout' : 'Edit Layout'}
                 </button>
                 <button onClick={() => openWidget('radar')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Radar</button>
@@ -107,12 +134,14 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
             </div>
 
             {/* Mobile Status Indicator - Moved down to avoid overlap */}
-            <DragWrapper id="mobile_sync" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-12 right-4">
+            {/* Mobile Status Indicator */}
+            <DragWrapper id="mobile_sync" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
                 <MobileSyncStatus data={data} />
             </DragWrapper>
 
             {/* Strategy Panel (AI) */}
-            <DragWrapper id="strategy_panel" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-32 left-10">
+            {/* Strategy Panel (AI) */}
+            <DragWrapper id="strategy_panel" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
                 <StrategyPanel strategyData={data.strategy} />
             </DragWrapper>
 
@@ -129,19 +158,20 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
                 </div>
             </div>
 
-            {/* 0. Dev Tools */}
-            <DebugPanel socket={socket} />
+
 
             {/* 0.1 Neural Report Modal */}
             <NeuralReport report={neuralReport} onClose={() => setNeuralReport(null)} />
 
             {/* 0.6 Fuel Strategy */}
-            <DragWrapper id="fuel_strategy" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute right-10 bottom-40">
+            {/* 0.6 Fuel Strategy */}
+            <DragWrapper id="fuel_strategy" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
                 <FuelStrategy fuelData={data.fuel_strategy} />
             </DragWrapper>
 
             {/* 0.7 Setup Manager */}
-            <DragWrapper id="setup_manager" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-20 right-10">
+            {/* 0.7 Setup Manager */}
+            <DragWrapper id="setup_manager" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
                 <SetupManager suggestion={data.setup_suggestion} />
             </DragWrapper>
 
@@ -157,62 +187,52 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
             <Spotter left={data.spotter_left} right={data.spotter_right} />
 
             {/* 3. Main HUD Cluster */}
-            <div className="w-full flex flex-col items-center">
-                {/* 3.1 RPM Bar */}
-                <DragWrapper id="rpm_bar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="w-[800px]">
-                    <RPMBar rpm={data.rpm} maxRpm={8000} />
-                </DragWrapper>
-
-                {/* 3.4 Input Traces */}
-                <DragWrapper id="inputs" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="mt-2">
-                    <div className="w-[600px] flex justify-center">
-                        <InputTelemetry telemetry={data} />
-                    </div>
-                </DragWrapper>
-            </div>
-
-            {/* 3.5 Radar Overlay (Absolute-ish but draggable) */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none">
+            <div className="w-full h-full pointer-events-none absolute inset-0">
                 <div className="pointer-events-auto">
-                    <DragWrapper id="radar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
-                        <RadarOverlay cars={data.radar_cars} />
+                    {/* 3.1 RPM Bar */}
+                    <DragWrapper id="rpm_bar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
+                        <RPMBar rpm={data.rpm} maxRpm={8000} />
                     </DragWrapper>
-                </div>
-            </div>
 
-            {/* 3.6 Bio-Metric Widget */}
-            <div className="absolute top-32 right-64 flex flex-col gap-2 pointer-events-none">
-                <div className="pointer-events-auto">
-                    <DragWrapper id="bio" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
-                        <BioWidget bio={data.bio} />
-                    </DragWrapper>
-                </div>
-            </div>
-
-            {/* 4. Lap Time Stats (Floating Right of HUD) */}
-            <div className="absolute bottom-32 right-20 flex flex-col gap-2 pointer-events-none">
-                <div className="pointer-events-auto">
-                    <DragWrapper id="lap_stats" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
-                        <div className="flex flex-col gap-2">
-                            <StatBox
-                                label="LAP TIME"
-                                value="1:34.2"
-                                color="text-yellow-400"
-                                subLabel="PRED"
-                                subValue={formatTime(data.predicted_lap)}
-                            />
-                            {
-                                data.potential_lap > 0 && (
-                                    <div className="bg-purple-900/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-lg flex flex-col items-center shadow-xl mt-2">
-                                        <span className="text-[8px] text-purple-300 font-bold tracking-widest uppercase">IDEAL</span>
-                                        <span className="text-xl font-black text-white tabular-nums tracking-tighter">{formatTime(data.potential_lap)}</span>
-                                    </div>
-                                )
-                            }
+                    {/* 3.4 Input Traces */}
+                    <DragWrapper id="inputs" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="">
+                        <div className="flex justify-center">
+                            <InputTelemetry telemetry={data} />
                         </div>
                     </DragWrapper>
                 </div>
             </div>
+
+            {/* 3.5 Radar Overlay (Absolute-ish but draggable) */}
+            <DragWrapper id="radar" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                <RadarOverlay cars={data.radar_cars} />
+            </DragWrapper>
+
+            {/* 3.6 Bio-Metric Widget */}
+            <DragWrapper id="bio" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                <BioWidget bio={data.bio} />
+            </DragWrapper>
+
+            {/* 4. Lap Time Stats (Floating Right of HUD) */}
+            <DragWrapper id="lap_stats" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange}>
+                <div className="flex flex-col gap-2">
+                    <StatBox
+                        label="LAP TIME"
+                        value="1:34.2"
+                        color="text-yellow-400"
+                        subLabel="PRED"
+                        subValue={formatTime(data.predicted_lap)}
+                    />
+                    {
+                        data.potential_lap > 0 && (
+                            <div className="bg-purple-900/80 backdrop-blur border border-purple-500/30 px-3 py-1 rounded-lg flex flex-col items-center shadow-xl mt-2">
+                                <span className="text-[8px] text-purple-300 font-bold tracking-widest uppercase">IDEAL</span>
+                                <span className="text-xl font-black text-white tabular-nums tracking-tighter">{formatTime(data.potential_lap)}</span>
+                            </div>
+                        )
+                    }
+                </div>
+            </DragWrapper>
 
         </div>
     )

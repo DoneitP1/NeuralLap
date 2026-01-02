@@ -31,18 +31,41 @@ function App() {
     brake: 0,
     spotter_left: false,
     spotter_right: false,
-    ar_brake_box: null,
-    ar_apex_corridor: null,
-    ghost_data: null,
+    ar_brake_box: { active: true, dist: 100 }, // Mock AR
+    ar_apex_corridor: { active: true }, // Mock AR
+    ghost_data: { delta: 0.0, position: 0 }, // Mock Ghost
     predicted_lap: 0,
     potential_lap: 0,
     coach_msg: null,
-    relative_drivers: [],
-    radar_cars: [],
-    setup_suggestion: null,
-    ar_lift_coast: null, // Added for ARVisuals
-    strategy: null, // Added for StrategyPanel
-    hardware: null, // Added for Hardware Integration
+    relative_drivers: [], // Should maybe be populated?
+    radar_cars: [{ id: 1, x: 5, y: 10, color: 'red' }, { id: 2, x: -5, y: 20, color: 'blue' }], // Mock Radar
+    setup_suggestion: {
+      active: true,
+      best_setup_name: "Sprint Setup V1",
+      track: "Monza",
+      car: "Ferrari 296 GT3",
+      conditions: "Dry",
+      source: "Community",
+      tire_bot: { suggestion: "Lower PSI by 0.5", reason: "Overheating" }
+    }, // Mock Setup
+    ar_lift_coast: null,
+    strategy: {
+      tire_degradation: 0,
+      fuel_strategy: { status: "OK" },
+      pit_recommendation: "STAY OUT",
+      tire_compound: "SOFT",
+      tire_prediction: { current_psi: 23.0, predicted_psi: 23.5, trend_direction: "UP" },
+      pit_alert: "UNDERCUT AVAILABLE"
+    }, // Mock Strategy
+    fuel_strategy: {
+      fuel_level: 10.0,
+      cons_per_lap: 1.8,
+      laps_remaining: 15,
+      box_this_lap: false,
+      fuel_to_add: 0
+    }, // Mock Fuel
+    bio: { heart_rate: 85, stress_level: "LOW" }, // Mock Bio
+    hardware: null,
     timestamp: 0
   })
 
