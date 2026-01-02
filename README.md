@@ -19,7 +19,7 @@
 ## Installation
 ### 1️⃣ Clone the Repository
 ```bash
-git clone https://github.com/yourusername/NeuralLap.git
+git clone https://github.com/doneitp1/NeuralLap.git
 cd NeuralLap
 ```
 
