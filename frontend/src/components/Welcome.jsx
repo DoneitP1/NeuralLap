@@ -35,7 +35,7 @@ const Welcome = () => {
             <div className="grid grid-cols-2 gap-6 w-full max-w-5xl z-10">
                 {/* Desktop Option */}
                 <button
-                    onClick={() => handleSelect('desktop')}
+                    onClick={() => handleSelect('desktop&bg=black')}
                     className="group relative h-48 bg-neutral-900/80 border border-white/5 rounded-2xl p-6 hover:border-cyan-500 transition-all duration-300 hover:scale-[1.02] flex flex-col items-center justify-center gap-3 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]"
                 >
                     <div className="p-3 rounded-full bg-cyan-900/30 text-cyan-400 group-hover:bg-cyan-500 group-hover:text-black transition-colors">

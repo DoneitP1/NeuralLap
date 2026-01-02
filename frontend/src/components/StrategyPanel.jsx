@@ -7,7 +7,7 @@ export function StrategyPanel({ strategyData }) {
 
     // Draggable State (Simplified for MVP, fixed text for now)
     return (
-        <div className="absolute top-32 left-10 bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-2xl w-64 animate-fade-in flex flex-col gap-4">
+        <div className="bg-black/80 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-2xl w-64 animate-fade-in flex flex-col gap-4">
 
             {/* Header */}
             <div className="text-[10px] font-bold text-gray-500 tracking-widest uppercase border-b border-white/10 pb-1 flex justify-between">
@@ -60,4 +60,45 @@ export function StrategyPanel({ strategyData }) {
     );
 }
 
-export default StrategyPanel;
+// Wrapper to handle data fetching if not passed directly via props, or augment props
+export default function StrategyPanelWrapper({ strategyData: propData }) {
+    const [apiData, setApiData] = useState(null);
+
+    useEffect(() => {
+        // Poll for strategy updates (supplementing socket data)
+        const fetchStrategy = async () => {
+            try {
+                // Mock session data for now - in real app this comes from Context or Props
+                const payload = {
+                    laps_completed: 15,
+                    total_laps: 50,
+                    fuel_level: 10.0,
+                    tire_compound: "SOFT",
+                    track_temp: 30.0
+                };
+
+                const response = await fetch('http://localhost:8000/api/strategy/recommendation', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    const result = await response.json();
+                    setApiData(result);
+                }
+            } catch (e) {
+                console.error("Strategy Fetch Error", e);
+            }
+        };
+
+        const interval = setInterval(fetchStrategy, 5000); // Poll every 5s
+        fetchStrategy();
+        return () => clearInterval(interval);
+    }, []);
+
+    const displayData = propData || apiData;
+
+    if (!displayData) return null;
+
+    return <StrategyPanel strategyData={displayData} />;
+}

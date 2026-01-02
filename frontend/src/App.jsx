@@ -12,6 +12,9 @@ import Marketplace from './components/Community/Marketplace' // NEW
 import Leagues from './components/Community/Leagues' // NEW
 import MobileCompanion from './components/Mobile/MobileCompanion' // NEW
 import AmbientLighting from './components/Hardware/AmbientLighting' // NEW
+import { AuthProvider, useAuth } from './context/AuthContext'
+import Login from './components/Login'
+import Register from './components/Register'
 
 // Connect to Backend
 // Connect to Backend (Dynamic Host)
@@ -104,8 +107,12 @@ function App() {
 
   // Customization Params
   const scale = parseFloat(query.get('scale')) || 1.0
-  const bgMode = query.get('bg') || 'transparent'
-  const bgClass = bgMode === 'black' ? 'bg-black' : bgMode === 'dark' ? 'bg-neutral-900' : 'bg-transparent'
+  // Default to black for visibility unless explicitly transparent
+  const bgMode = query.get('bg') || 'black'
+  const bgClass = bgMode === 'transparent' ? 'bg-transparent' : bgMode === 'dark' ? 'bg-neutral-900' : 'bg-black'
+
+  console.log("App Mode:", appMode, "Background:", bgMode, "Class:", bgClass);
+
 
   // 1. STANDALONE WIDGET VIEWS (Priority)
   // These are for VR windows popped out from the launcher
@@ -142,15 +149,22 @@ function App() {
   // 2. APP MODES
   if (appMode === 'desktop') {
     return (
-      <>
+      <div className={`w-screen h-screen overflow-hidden ${bgClass}`}>
         <AmbientLighting lightEvent={data.hardware?.light} />
         <Dashboard data={data} socket={socket} neuralReport={neuralReport} setNeuralReport={setNeuralReport} />
-      </>
+        <AuthOverlay />
+      </div>
     )
   }
 
   if (appMode === 'vr') {
-    return <VRMenu />
+    return (
+      <>
+        <VRMenu />
+        <AuthOverlay />
+      </>
+    )
+
   }
 
   if (appMode === 'analysis') {
@@ -183,9 +197,57 @@ function App() {
   }
 
   // 3. LANDING PAGE (Default)
-  return <Welcome />
+  return (
+    <>
+      <Welcome />
+      <AuthOverlay />
+    </>
+  )
 }
 
-export default App
+function AuthOverlay() {
+  const { user } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+
+  // If logged in, maybe show a small profile badge or nothing
+  if (user) return null;
+
+  // If not logged in, show login button (or handle via Welcome)
+  // For now, let's put a "Pilot Login" button in bottom right
+  return (
+    <>
+      {!showLogin && !showRegister && (
+        <button
+          onClick={() => setShowLogin(true)}
+          className="fixed bottom-4 right-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full text-sm backdrop-blur-md border border-white/10 transition-all z-50">
+          Pilot Login
+        </button>
+      )}
+
+      {showLogin && (
+        <Login
+          onSwitchToRegister={() => { setShowLogin(false); setShowRegister(true); }}
+          onClose={() => setShowLogin(false)}
+        />
+      )}
+
+      {showRegister && (
+        <Register
+          onSwitchToLogin={() => { setShowRegister(false); setShowLogin(true); }}
+          onClose={() => setShowRegister(false)}
+        />
+      )}
+    </>
+  )
+}
+
+export default function AppWrapper() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  )
+}
 
 

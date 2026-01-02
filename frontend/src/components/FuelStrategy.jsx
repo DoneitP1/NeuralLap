@@ -7,62 +7,16 @@ function cn(...inputs) {
 }
 
 export function FuelStrategy({ fuelData }) {
-    // Default position (Right side, below HUD)
-    const [pos, setPos] = useState({ x: window.innerWidth - 220, y: 500 });
-    const [dragging, setDragging] = useState(false);
-    const [rel, setRel] = useState(null);
 
-    const onMouseDown = (e) => {
-        if (e.button !== 0) return;
-        setDragging(true);
-        setRel({ x: e.clientX - pos.x, y: e.clientY - pos.y });
-        e.stopPropagation();
-        e.preventDefault();
-    };
-
-    const onMouseMove = (e) => {
-        if (!dragging) return;
-        let newX = e.clientX - rel.x;
-        let newY = e.clientY - rel.y;
-
-        const maxX = window.innerWidth - 180;
-        const maxY = window.innerHeight - 100;
-
-        setPos({
-            x: Math.max(0, Math.min(newX, maxX)),
-            y: Math.max(0, Math.min(newY, maxY))
-        });
-        e.stopPropagation();
-        e.preventDefault();
-    };
-
-    const onMouseUp = () => setDragging(false);
-
-    useEffect(() => {
-        if (dragging) {
-            window.addEventListener('mousemove', onMouseMove);
-            window.addEventListener('mouseup', onMouseUp);
-        } else {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        }
-        return () => {
-            window.removeEventListener('mousemove', onMouseMove);
-            window.removeEventListener('mouseup', onMouseUp);
-        };
-    }, [dragging]);
 
     if (!fuelData) return null;
 
     return (
         <div
             className={cn(
-                "absolute bg-black/80 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-2xl w-48 cursor-move active:cursor-grabbing select-none transition-shadow",
-                dragging ? "shadow-orange-500/20 border-orange-500/50" : "",
+                "bg-black/80 backdrop-blur-md rounded-xl border border-white/10 p-4 shadow-2xl w-48 select-none transition-shadow",
                 fuelData.box_this_lap && "border-red-500 shadow-[0_0_30px_rgba(220,38,38,0.5)] animate-pulse"
             )}
-            style={{ left: pos.x, top: pos.y, zIndex: 100 }}
-            onMouseDown={onMouseDown}
         >
             {/* Grip Handle */}
             <div className="absolute top-2 right-2 flex gap-0.5 opacity-20 pointer-events-none">

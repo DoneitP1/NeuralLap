@@ -144,6 +144,7 @@ class StrategyEngine:
         
         deg = self.calculate_tire_degradation(laps_done, tire_compound, track_temp)
         fuel_strat = self.calculate_fuel_strategy(total_laps, laps_done, fuel_level)
+        tire_pred = self.predict_tire_pressures(track_temp) # Add Prediction
         
         pit_recommendation = "STAY OUT"
         if deg > 70 or fuel_strat["status"] == "CRITICAL":
@@ -153,7 +154,9 @@ class StrategyEngine:
             "tire_degradation": deg,
             "fuel_strategy": fuel_strat,
             "pit_recommendation": pit_recommendation,
-            "tire_compound": tire_compound
+            "tire_compound": tire_compound,
+            "tire_prediction": tire_pred, # Include in response
+            "pit_alert": self.analyze_pit_window(0, 0, 0) # Include Pit Alert (mocked for now)
         }
 
 strategy_engine = StrategyEngine()

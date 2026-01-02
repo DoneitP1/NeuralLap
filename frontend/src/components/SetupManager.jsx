@@ -28,7 +28,7 @@ const SetupManager = ({ suggestion }) => {
     };
 
     return (
-        <div className="absolute top-20 right-10 w-80 bg-neutral-900 border border-teal-500/50 rounded-xl shadow-[0_0_30px_rgba(20,184,166,0.2)] overflow-hidden animate-slide-in">
+        <div className="w-80 bg-neutral-900 border border-teal-500/50 rounded-xl shadow-[0_0_30px_rgba(20,184,166,0.2)] overflow-hidden animate-slide-in">
             {/* Header */}
             <div className="bg-teal-900/40 p-3 flex justify-between items-center border-b border-teal-500/20">
                 <div className="flex items-center gap-2">

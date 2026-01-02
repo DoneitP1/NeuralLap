@@ -12,6 +12,9 @@ import RadarOverlay from './RadarOverlay'
 import SetupManager from './SetupManager'
 import NeuralReport from './NeuralReport'
 import { BioWidget } from './BioWidget' // NEW V3.1
+import MobileSyncStatus from './Mobile/MobileSyncStatus' // NEW
+import StrategyPanel from './StrategyPanel' // NEW
+
 
 // --- HELPER COMPONENTS (Moved from App.jsx) ---
 function cn(...inputs) {
@@ -71,7 +74,8 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
     }
 
     const openWidget = (viewName) => {
-        window.open(`/?view=${viewName}&scale=1.0&bg=transparent`, viewName, 'width=400,height=400,frame=false,transparent=true')
+        // Use bg=black for browser compatibility, user can change if needed
+        window.open(`/?view=${viewName}&scale=1.0&bg=black`, viewName, 'width=400,height=400,frame=false,transparent=true')
     }
 
     // --- LAYOUT EDITOR STATE ---
@@ -88,7 +92,8 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
     }
 
     return (
-        <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-end pb-12 select-none overflow-hidden relative fade-in">
+        <div className="w-screen h-screen bg-transparent flex flex-col items-center justify-end pb-12 select-none overflow-hidden relative">
+
 
             {/* Widget Pop-out Controls */}
             {/* Widget Pop-out Controls & Edit Mode */}
@@ -100,6 +105,17 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
                 <button onClick={() => openWidget('inputs')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Inputs</button>
                 <button onClick={() => openWidget('relative')} className="p-1 text-xs bg-slate-800 text-white rounded">Pop Relative</button>
             </div>
+
+            {/* Mobile Status Indicator - Moved down to avoid overlap */}
+            <DragWrapper id="mobile_sync" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-12 right-4">
+                <MobileSyncStatus data={data} />
+            </DragWrapper>
+
+            {/* Strategy Panel (AI) */}
+            <DragWrapper id="strategy_panel" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-32 left-10">
+                <StrategyPanel strategyData={data.strategy} />
+            </DragWrapper>
+
 
             {/* 0. Top Bar / Info */}
             <div className="absolute top-10 left-10 flex flex-col gap-2">
@@ -120,10 +136,15 @@ const Dashboard = ({ data, socket, neuralReport, setNeuralReport }) => {
             <NeuralReport report={neuralReport} onClose={() => setNeuralReport(null)} />
 
             {/* 0.6 Fuel Strategy */}
-            <FuelStrategy fuelData={data.fuel_strategy} />
+            <DragWrapper id="fuel_strategy" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute right-10 bottom-40">
+                <FuelStrategy fuelData={data.fuel_strategy} />
+            </DragWrapper>
 
             {/* 0.7 Setup Manager */}
-            <SetupManager suggestion={data.setup_suggestion} />
+            <DragWrapper id="setup_manager" editMode={editMode} layout={layout} onLayoutChange={handleLayoutChange} className="absolute top-20 right-10">
+                <SetupManager suggestion={data.setup_suggestion} />
+            </DragWrapper>
+
 
             {/* 1. AR Layer */}
             <ARVisuals
